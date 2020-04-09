@@ -121,6 +121,11 @@ def DownloadList_MODIS(username , password ,date_start , date_end , earthData_na
 		matching.extend([s for s in match if "h12v04" in s])
 		matching.extend([s for s in match if "h12v05" in s])
 		matching.extend([s for s in match if "h13v04" in s])
+
+		if matching==[]:
+			print('NO DATA AVAILABLE for %s'%date)
+			count+=1
+			continue
 		
 		start_ind = matching[0].find(earthData_name)
 		end_ind   = matching[0].find('.hdf') + 4
