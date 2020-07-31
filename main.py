@@ -2,7 +2,7 @@
 """
 Created on Sun Jan 26 14:56:35 2020
 
-@author: 16785
+@author: kayhangavahi@gmail.com
 """
 import MODIS as ds
 start_date = '2018-01-01'
