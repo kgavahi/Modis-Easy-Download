@@ -8,6 +8,6 @@ start_date = '2018-01-01'
 end_date   = '2018-01-01'
 product    = 'MCD12Q1'
 
-# This might not be nes
+# This might not be nesasd 
 ds.dl_MODIS('****','*****', start_date, end_date, product)
 
