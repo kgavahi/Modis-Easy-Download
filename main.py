@@ -8,5 +8,5 @@ start_date = '2018-01-01'
 end_date   = '2018-01-01'
 product    = 'MCD12Q1'
 
-ds.dl_MODIS('kgavahi194','ip2jTPU3yWlQ', start_date, end_date, product)
+ds.dl_MODIS('****','*****', start_date, end_date, product)
 

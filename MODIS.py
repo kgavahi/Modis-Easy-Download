@@ -169,8 +169,8 @@ def download(username , password , date_start , date_end , earthData_name,fileLi
         count += 1
 def main():
 
-    username   = 'kgavahi194'
-    password   = 'ip2jTPU3yWlQ'
+    username   = '****'
+    password   = '****'
     start_date = '2018-01-01'
     end_date   = '2018-01-01'
     product    = 'MCD12Q1'
