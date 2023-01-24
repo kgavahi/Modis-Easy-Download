@@ -30,13 +30,12 @@ def read_webpage(filex):
     return r
 def DownloadList_MODIS(username, password, date_start, date_end, earthData_name, earthData_version):
 
-    dateList = []
-    dateList_to_download = []
-
+    # Convert dates to datetime objects
     date_start = datetime.datetime.strptime(date_start, '%Y-%m-%d').date()
     date_end = datetime.datetime.strptime(date_end, '%Y-%m-%d').date()
 
-  
+    
+    
     sattelite_mapping = {
         'MCD': 'MOTA',
         'MYD': 'MOLA',
