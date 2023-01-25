@@ -13,6 +13,10 @@ import requests
 from pyhdf.SD import SD, SDC
 #from netCDF4 import Dataset
 
+def readCredentials(file):
+    with open(file) as f:
+        lines = f.readlines()
+    return lines
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
 def read_webpage(filex):
@@ -170,9 +174,11 @@ def download(username , password , date_start , date_end , earthData_name,fileLi
         
         
 def main():
-
-    username   = '*******'
-    password   = '*******'
+    
+    
+    cred = readCredentials('credentials.txt')
+    username   = cred[0]
+    password   = cred[1]
     start_date = '2018-01-01'
     end_date   = '2018-01-01'
     product    = 'MCD12Q1'
