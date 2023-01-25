@@ -61,7 +61,8 @@ def DownloadList_MODIS(username, password, date_start, date_end, earthData_name,
       
     dateList_to_download = [date for date in dateList if first_date <= date <= last_date]
 
-
+    
+    # 14 tiles that cover the CONUS
     conus_tiles = ["h08v04","h08v05","h08v06",
                     "h09v04","h09v05","h09v06",
                      "h10v04","h10v05","h10v06",
@@ -118,8 +119,8 @@ def download(username , password , date_start , date_end , earthData_name,fileLi
     #    print(i)
     
 
-# -----------------------------------------DOWNLOAD FILE(S)-------------------------------------- #
-# Loop through and download all files to the directory specified above, and keeping same filenames
+    # -----------------------------------------DOWNLOAD FILE(S)-------------------------------------- #
+    # Loop through and download all files to the directory specified above, and keeping same filenames
     count = 0
     for f in fileList:
         #print('    ',str((count+1)/len(fileList)*100)[:5] + ' % Completed')
@@ -166,6 +167,8 @@ def download(username , password , date_start , date_end , earthData_name,fileLi
                 print("Was a nice sleep, now let me continue...")
                 continue
         count += 1
+        
+        
 def main():
 
     username   = '*******'
