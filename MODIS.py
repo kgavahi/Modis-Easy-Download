@@ -11,7 +11,7 @@ import os
 import shutil
 import requests
 from pyhdf.SD import SD, SDC
-from netCDF4 import Dataset
+#from netCDF4 import Dataset
 
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
