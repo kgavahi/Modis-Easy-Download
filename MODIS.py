@@ -13,10 +13,31 @@ import requests
 from pyhdf.SD import SD, SDC
 #from netCDF4 import Dataset
 
+def LetMeSleep(sec):
+    print("Connection refused by the server..")
+    print("It can be due to sending multiple requests")
+    print(f"Let me sleep for {sec} seconds")
+    print("ZZzzzz...")
+    time.sleep(10)
+    print("Was a nice sleep, now let me continue...")    
 def readCredentials(file):
     with open(file) as f:
         lines = f.readlines()
     return lines
+def downloadFile(f, save_name):
+    while True:
+        try:
+            response = requests.get(f.strip(), stream=True)
+            if response.status_code != 200:
+                print("Verify that your username and password are correct")
+            else:
+                with open(save_name, 'wb') as d:
+                    d.write(response.content)
+                print(f'Downloaded file: {save_name}')
+                break
+        except:
+            LetMeSleep(5)
+    
 def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
 def read_webpage(filex):
@@ -26,11 +47,7 @@ def read_webpage(filex):
                 r = f.read().decode('utf-8')
             break
         except:
-            print("Connection refused by the server..")
-            print("Let me sleep for 5 seconds")
-            print("ZZzzzz...")
-            time.sleep(10)
-            print("Was a nice sleep, now let me continue...")
+            LetMeSleep(5)
     return r
 def DownloadList_MODIS(username, password, date_start, date_end, earthData_name, earthData_version):
 
@@ -73,8 +90,9 @@ def DownloadList_MODIS(username, password, date_start, date_end, earthData_name,
                      "h11v04","h11v05","h12v04",
                      "h12v05","h13v04"]    
 
-    count=0
-    for date in dateList_to_download:           
+
+
+    for i, date in enumerate(dateList_to_download):           
         date_str = date.strftime("%Y.%m.%d")
         filex = f"https://e4ftl01.cr.usgs.gov/{sattelite}/{earthData_name}.{earthData_version}/{date_str}/"
         page = read_webpage(filex)
@@ -86,7 +104,6 @@ def DownloadList_MODIS(username, password, date_start, date_end, earthData_name,
 
         if not conus_files:
             print(f'NO DATA AVAILABLE for {date}')
-            count += 1
             continue
 
         start_ind = conus_files[0].find(earthData_name)
@@ -95,82 +112,58 @@ def DownloadList_MODIS(username, password, date_start, date_end, earthData_name,
         URLs = list(set(mylist))
            
         download(username , password , date_start , date_end , earthData_name,URLs)
-        print('    ',str((count+1)/len(dateList_to_download)*100)[:5] + ' % Completed')
-        count+=1
+        print('    ',str((i+1)/len(dateList_to_download)*100)[:5] + ' % Completed')
 
-def download(username , password , date_start , date_end , earthData_name,fileList):
-    if not os.path.exists('./'+earthData_name):
-        os.mkdir('./'+earthData_name)
-    saveDir = './' +  earthData_name # Set local directory to download to
+
+def download(username, password, date_start, date_end, earthData_name, file_list):
     
+    save_dir = f'{earthData_name}'
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+
     
-    pathNetrc = os.path.join(os.path.expanduser("~"),'.netrc')
-    if os.path.exists(pathNetrc):
-        os.remove(pathNetrc)
+    path_netrc = os.path.expanduser("~/.netrc")
+    if os.path.exists(path_netrc):
+        os.remove(path_netrc)
         
-    netrcFile = ['machine urs.earthdata.nasa.gov','login ' + username,'password '+password]
-    with open('.netrc', 'w') as f:
-        for item in netrcFile:
-            f.write("%s\n" % item)
-        
-    shutil.copy('.netrc',os.path.expanduser("~"))
+    with open(path_netrc, 'w') as f:
+        f.write(f"machine urs.earthdata.nasa.gov\nlogin {username}\npassword {password}")
+
     
     
     
     #fileList = DownloadList(date_start , date_end,earthData_name)
-    fileList = sorted(fileList)
+    file_list = sorted(file_list)
     #for i in fileList:
     #    print(i)
     
 
     # -----------------------------------------DOWNLOAD FILE(S)-------------------------------------- #
-    # Loop through and download all files to the directory specified above, and keeping same filenames
-    count = 0
-    for f in fileList:
-        #print('    ',str((count+1)/len(fileList)*100)[:5] + ' % Completed')
+    # Loop through and download 14 files to the directory specified above, and keeping same filenames
+    for i, f in enumerate(file_list):
+
         date_of_file = f.split('/')[5].replace('.','-')
-        path = os.path.join(saveDir,date_of_file)
+        file_name = f.split('/')[-1].strip()
+        path = os.path.join(save_dir, date_of_file)
+        path = f'{save_dir}/{date_of_file}'
+
         if not os.path.exists(path):
             os.mkdir(path)
-        saveName = os.path.join(path, f.split('/')[-1].strip())
-        if os.path.exists(saveName):
+        save_name = f'{path}/{file_name}'
+
+        if os.path.exists(save_name):
             try:
-                if not earthData_name=='IMERG':
-                    f = SD( saveName , SDC.READ)
-                    f.end()
-                else:
-                    f = Dataset( saveName , 'r')
-                    f.close()
-                count += 1
+
+                f = SD( save_name , SDC.READ)
+                f.end()
                 continue
+            
             except:
-                print('Damgeged file encountered, redownloading...')
+                print('Damaged file encountered, redownloading...')
+
     # Create and submit request and download file
-        file_downloaded = 0
-        while file_downloaded == 0:
-            try:
-                with requests.get(f.strip(), stream=True) as response:
-                    if response.status_code != 200:
-                        print("Verify that your username and password are correct")
-                    else:
-                        response.raw.decode_content = True
-                        content = response.raw
-                        with open(saveName, 'wb') as d:
-                            while True:
-                                chunk = content.read(16 * 1024)
-                                if not chunk:
-                                    break
-                                d.write(chunk)
-                        print('Downloaded file: {}'.format(saveName))
-                        file_downloaded = 1
-            except:
-                print("Connection refused by the server..")
-                print("Let me sleep for 5 seconds")
-                print("ZZzzzz...")
-                time.sleep(10)
-                print("Was a nice sleep, now let me continue...")
-                continue
-        count += 1
+        downloadFile(f, save_name)
+
         
         
 def main():
@@ -180,8 +173,8 @@ def main():
     username   = cred[0]
     password   = cred[1]
     start_date = '2018-01-01'
-    end_date   = '2018-01-01'
-    product    = 'MCD12Q1'
+    end_date   = '2018-01-2'
+    product    = 'MOD13A1'
     version    = '006'
 
     
