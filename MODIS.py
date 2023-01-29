@@ -8,7 +8,6 @@ import datetime
 import time
 import urllib
 import os
-import shutil
 import requests
 from pyhdf.SD import SD, SDC
 #from netCDF4 import Dataset
@@ -18,7 +17,7 @@ def LetMeSleep(sec):
     print("It can be due to sending multiple requests")
     print(f"Let me sleep for {sec} seconds")
     print("ZZzzzz...")
-    time.sleep(10)
+    time.sleep(sec)
     print("Was a nice sleep, now let me continue...")    
 def readCredentials(file):
     with open(file) as f:
@@ -50,6 +49,18 @@ def read_webpage(filex):
             LetMeSleep(5)
     return r
 def DownloadList_MODIS(username, password, date_start, date_end, earthData_name, earthData_version):
+
+    save_dir = f'{earthData_name}'
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+
+
+    path_netrc = os.path.expanduser("~/.netrc")
+    if os.path.exists(path_netrc):
+        os.remove(path_netrc)
+        
+    with open(path_netrc, 'w') as f:
+        f.write(f"machine urs.earthdata.nasa.gov\nlogin {username}\npassword {password}")    
 
     # Convert dates to datetime objects
     date_start = datetime.datetime.strptime(date_start, '%Y-%m-%d').date()
@@ -111,33 +122,17 @@ def DownloadList_MODIS(username, password, date_start, date_end, earthData_name,
         mylist = [filex + i[start_ind:end_ind] for i in conus_files]
         URLs = list(set(mylist))
            
-        download(username , password , date_start , date_end , earthData_name,URLs)
+        download(URLs, save_dir)
         print('    ',str((i+1)/len(dateList_to_download)*100)[:5] + ' % Completed')
 
 
-def download(username, password, date_start, date_end, earthData_name, file_list):
+def download(file_list, save_dir):
     
-    save_dir = f'{earthData_name}'
-    if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+    
 
-    
-    path_netrc = os.path.expanduser("~/.netrc")
-    if os.path.exists(path_netrc):
-        os.remove(path_netrc)
-        
-    with open(path_netrc, 'w') as f:
-        f.write(f"machine urs.earthdata.nasa.gov\nlogin {username}\npassword {password}")
-
-    
-    
-    
-    #fileList = DownloadList(date_start , date_end,earthData_name)
     file_list = sorted(file_list)
-    #for i in fileList:
-    #    print(i)
-    
 
+    
     # -----------------------------------------DOWNLOAD FILE(S)-------------------------------------- #
     # Loop through and download 14 files to the directory specified above, and keeping same filenames
     for i, f in enumerate(file_list):
@@ -161,7 +156,7 @@ def download(username, password, date_start, date_end, earthData_name, file_list
             except:
                 print('Damaged file encountered, redownloading...')
 
-    # Create and submit request and download file
+        # Create and submit request and download file
         downloadFile(f, save_name)
 
         
@@ -172,15 +167,20 @@ def main():
     cred = readCredentials('credentials.txt')
     username   = cred[0]
     password   = cred[1]
-    start_date = '2018-01-01'
-    end_date   = '2018-01-2'
+    start_date = '1950-01-01'
+    end_date   = '2018-2-2'
     product    = 'MOD13A1'
     version    = '006'
 
     
     
        
-    DownloadList_MODIS(username , password ,start_date , end_date , product, version)
+    DownloadList_MODIS(username, 
+                       password, 
+                       start_date, 
+                       end_date, 
+                       product, 
+                       version)
     
 
 if __name__ == '__main__':
